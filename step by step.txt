@@ -1,0 +1,14 @@
+gcloud dataproc clusters create ${CLUSTER_NAME} --enable-component-gateway \
+--region ${REGION} --subnet default --public-ip-address \
+--master-machine-type n2-standard-4 --master-boot-disk-size 50 \
+--num-workers 2 --worker-machine-type n2-standard-2 --worker-boot-disk-size 50 \
+--image-version 2.2-debian12 --optional-components JUPYTER \
+--project ${PROJECT_ID} --max-age=3h
+
+gsutil cp -r gs://bd-wsb-24-09-dm/projekt2/datasource* .
+
+hdfs dfs -mkdir -p /home/dawiden1/data/zestaw6
+
+hadoop fs -copyFromLocal * ./ && hdfs dfs -cp ./* /home/dawiden1/data/zestaw6/
+
+hdfs dfs -ls /home/dawiden1/data/zestaw6/datasource1/
