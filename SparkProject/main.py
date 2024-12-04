@@ -94,4 +94,3 @@ top_nationalities.printSchema()
 
 selected_columns.show()
 top_nationalities.show()
-fifaplayers.show()

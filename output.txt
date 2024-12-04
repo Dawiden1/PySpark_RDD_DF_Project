@@ -1,0 +1,44 @@
+root
+ |-- category: string (nullable = false)
+ |-- name: string (nullable = true)
+ |-- sum_value_eur: double (nullable = true)
+ |-- avg_wage_eur: double (nullable = true)
+ |-- avg_age: double (nullable = true)
+ |-- count_players: long (nullable = false)
+
++---------+----------------+---------+--------+---+---------+------------+--------------------+-------------------+
+|player_id|player_positions|value_eur|wage_eur|age|league_id|club_team_id|           club_name|   nationality_name|
++---------+----------------+---------+--------+---+---------+------------+--------------------+-------------------+
+|   238985|         CDM, RB|    45000|     500| 20|       65|         422|           Cork City|Republic of Ireland|
+|   207929|          LM, RM|  1600000|   12000| 31|       68|      101041|           Sivasspor|             Brazil|
+|   247888|         ST, CAM|  3000000|   16000| 19|        4|         229|          Anderlecht|              Italy|
+|   238082|              RM|   350000|    2000| 20|      353|      110398|              Olimpo|          Argentina|
+|   255416|              CB|  1800000|    2000| 20|      335|      110975|Universidad Católica|              Chile|
+|   231143|              ST|   220000|    2000| 20|       50|          83|          Motherwell|             Serbia|
+|   225963|              RB|    20000|    2000| 19|      336|      101105|         Millonarios|           Colombia|
+|   208878|         CAM, CM|   700000|    3000| 29|       10|         647|          SC Cambuur|        Netherlands|
+|   271436|         CAM, RW|   775000|     900| 19|      308|         518|              Chaves|          Australia|
+|   199490|          ST, CF|   850000|    4000| 31|       54|      110831|                Lugo|              Spain|
+|   207798|  RM, LM, CM, RB|   190000|    2000| 21|       50|          77|            Aberdeen|           Scotland|
+|   177683|              GK| 22000000|   43000| 33|       19|          23|Borussia Möncheng...|        Switzerland|
+|   254926|         CDM, CM|   725000|     500| 29|     2018|      114580|              Delfin|            Ecuador|
+|   251726|              CB|   110000|     500| 33|     2149|      111629|         East Bengal|              India|
+|   232265|          CB, RB|   240000|    3000| 24|     2012|      112162|      Jiangsu Suning|           China PR|
+|   220070|          LM, RW|   475000|    2000| 26|       66|      111085|            ŁKS Łódź|              Spain|
+|   235990|              GK|   625000|    3000| 21|       53|         467|            SD Eibar|              Spain|
+|   243312|     CM, LM, CAM|  1600000|    4000| 24|       54|        1853|             Levante|              Spain|
+|   252360|          CB, LB|     null|    null| 26|     null|        null|                null|      Côte d'Ivoire|
+|   260872|              LB|  1000000|     850| 22|       41|        1757|          Sandefjord|        Netherlands|
++---------+----------------+---------+--------+---+---------+------------+--------------------+-------------------+
+only showing top 20 rows
+
++-----------+--------------------+-------------+------------------+-----------------+-------------+
+|   category|                name|sum_value_eur|      avg_wage_eur|          avg_age|count_players|
++-----------+--------------------+-------------+------------------+-----------------+-------------+
+|nationality|United Arab Emirates|      1.062E7|           20250.0|             23.5|            2|
+|nationality|               Egypt|     1.9152E8|18433.333333333332|25.77777777777778|           45|
+|nationality|  Dominican Republic|      1.003E7|           13800.0|             23.0|           10|
++-----------+--------------------+-------------+------------------+-----------------+-------------+
+
+
+Process finished with exit code 0
