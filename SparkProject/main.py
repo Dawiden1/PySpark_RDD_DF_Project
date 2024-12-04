@@ -5,6 +5,8 @@ spark = SparkSession.builder \
     .config("spark.hadoop.hadoop.home.dir", "C:/Hadoop") \
     .getOrCreate()
 
+spark.conf.set("spark.sql.debug.maxToStringFields", 10000)
+
 datasource1 = spark.read.csv(
     "merged_data.csv",
     sep=";",        # separator
@@ -43,26 +45,30 @@ top_nationalities = (reduced_data.groupBy("nationality_name")
                                f.avg("age").alias("avg_age"),
                                f.count("player_id").alias("count_players"))
                           .orderBy(f.desc("avg_wage_eur"))
-                          .select("nationality as category",
+                          .withColumn("category",f.lit("nationality"))
+                          .select(
+                                  f.col("category"),
                                   f.col("nationality_name").alias("name"),
-                                  round(f.col("sum_value_eur"),2),
-                                  round(f.col("avg_wage_eur"), 2),
-                                  round(f.col("avg_age"), 2),
-                                  round(f.col("count_players"), 2))
+                                  f.col("sum_value_eur"),
+                                  f.col("avg_wage_eur"),
+                                  f.col("avg_age"),
+                                  f.col("count_players"))
                           .limit(3))
 
-top_clubs = (reduced_data.groupBy("club_name")
+"""top_clubs = (reduced_data.groupBy("club_name")
                           .agg(f.sum("value_eur").alias("sum_value_eur"),
                                f.avg("wage_eur").alias("avg_wage_eur"),
                                f.avg("age").alias("avg_age"),
                                f.count("player_id").alias("count_players"))
                           .orderBy(f.desc("avg_wage_eur"))
-                          .select("club as category",
+                          .withColumn("category",f.lit("club"))
+                          .select(
+                                  f.col("category"),
                                   f.col("nationality_name").alias("name"),
-                                  round(f.col("sum_value_eur"),2),
-                                  round(f.col("avg_wage_eur"), 2),
-                                  round(f.col("avg_age"), 2),
-                                  round(f.col("count_players"), 2))
+                                  f.col("sum_value_eur"),
+                                  f.col("avg_wage_eur"),
+                                  f.col("avg_age"),
+                                  f.col("count_players"))
                           .limit(3))
 
 top_leagues = (reduced_data.groupBy("league_name")
@@ -71,15 +77,21 @@ top_leagues = (reduced_data.groupBy("league_name")
                                f.avg("age").alias("avg_age"),
                                f.count("player_id").alias("count_players"))
                           .orderBy(f.desc("avg_wage_eur"))
-                          .select("league as category",
+                          .withColumn("category",f.lit("league"))
+                          .select(
+                                  f.col("category"),
                                   f.col("nationality_name").alias("name"),
-                                  round(f.col("sum_value_eur"),2),
-                                  round(f.col("avg_wage_eur"), 2),
-                                  round(f.col("avg_age"), 2),
-                                  round(f.col("count_players"), 2))
+                                  f.col("sum_value_eur"),
+                                  f.col("avg_wage_eur"),
+                                  f.col("avg_age"),
+                                  f.col("count_players"))
                           .limit(3))
 
-# możliwe, że trzeba expr("nationality as category")
+fifaplayers = top_clubs.union(top_leagues).union(top_nationalities)
+"""
+
+top_nationalities.printSchema()
 
 selected_columns.show()
-selected_nationalities.show()
+top_nationalities.show()
+fifaplayers.show()
