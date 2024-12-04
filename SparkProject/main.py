@@ -37,7 +37,49 @@ reduced_data = (selected_columns
                 .join(agg_leagues, on="league_id", how="inner")
                 )
 
+top_nationalities = (reduced_data.groupBy("nationality_name")
+                          .agg(f.sum("value_eur").alias("sum_value_eur"),
+                               f.avg("wage_eur").alias("avg_wage_eur"),
+                               f.avg("age").alias("avg_age"),
+                               f.count("player_id").alias("count_players"))
+                          .orderBy(f.desc("avg_wage_eur"))
+                          .select("nationality as category",
+                                  f.col("nationality_name").alias("name"),
+                                  round(f.col("sum_value_eur"),2),
+                                  round(f.col("avg_wage_eur"), 2),
+                                  round(f.col("avg_age"), 2),
+                                  round(f.col("count_players"), 2))
+                          .limit(3))
 
+top_clubs = (reduced_data.groupBy("club_name")
+                          .agg(f.sum("value_eur").alias("sum_value_eur"),
+                               f.avg("wage_eur").alias("avg_wage_eur"),
+                               f.avg("age").alias("avg_age"),
+                               f.count("player_id").alias("count_players"))
+                          .orderBy(f.desc("avg_wage_eur"))
+                          .select("club as category",
+                                  f.col("nationality_name").alias("name"),
+                                  round(f.col("sum_value_eur"),2),
+                                  round(f.col("avg_wage_eur"), 2),
+                                  round(f.col("avg_age"), 2),
+                                  round(f.col("count_players"), 2))
+                          .limit(3))
+
+top_leagues = (reduced_data.groupBy("league_name")
+                          .agg(f.sum("value_eur").alias("sum_value_eur"),
+                               f.avg("wage_eur").alias("avg_wage_eur"),
+                               f.avg("age").alias("avg_age"),
+                               f.count("player_id").alias("count_players"))
+                          .orderBy(f.desc("avg_wage_eur"))
+                          .select("league as category",
+                                  f.col("nationality_name").alias("name"),
+                                  round(f.col("sum_value_eur"),2),
+                                  round(f.col("avg_wage_eur"), 2),
+                                  round(f.col("avg_age"), 2),
+                                  round(f.col("count_players"), 2))
+                          .limit(3))
+
+# możliwe, że trzeba expr("nationality as category")
 
 selected_columns.show()
-selected_datasource1.show()
+selected_nationalities.show()
