@@ -40,10 +40,10 @@ reduced_data = (selected_columns
                 )
 
 top_nationalities = (reduced_data.groupBy("nationality_name")
-                          .agg(f.sum("value_eur").alias("sum_value_eur"),
-                               f.avg("wage_eur").alias("avg_wage_eur"),
-                               f.avg("age").alias("avg_age"),
-                               f.count("player_id").alias("count_players"))
+                          .agg(round(f.sum("value_eur"),2).alias("sum_value_eur"),
+                               round(f.avg("wage_eur"),2).alias("avg_wage_eur"),
+                               round(f.avg("age"),2).alias("avg_age"),
+                               round(f.count("player_id"),2).alias("count_players"))
                           .orderBy(f.desc("avg_wage_eur"))
                           .withColumn("category",f.lit("nationality"))
                           .select(
@@ -61,9 +61,10 @@ top_nationalities = (reduced_data.groupBy("nationality_name")
                                f.avg("age").alias("avg_age"),
                                f.count("player_id").alias("count_players"))
                           .orderBy(f.desc("avg_wage_eur"))
-                          .withColumn("category",f.lit("club"))
+                          # .withColumn("category",f.lit("club"))
                           .select(
-                                  f.col("category"),
+                                  # f.col("category"),
+                                  f.lit("club").alias("category"),
                                   f.col("nationality_name").alias("name"),
                                   f.col("sum_value_eur"),
                                   f.col("avg_wage_eur"),
