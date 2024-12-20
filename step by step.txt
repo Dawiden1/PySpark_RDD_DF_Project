@@ -7,8 +7,10 @@ gcloud dataproc clusters create ${CLUSTER_NAME} --enable-component-gateway \
 
 gsutil cp -r gs://bd-wsb-24-09-dm/projekt2/datasource* .
 
-hdfs dfs -mkdir -p /home/dawiden1/data/zestaw6
+hadoop fs -mkdir /tmp/output1 
 
-hadoop fs -copyFromLocal * ./ && hdfs dfs -cp ./* /home/dawiden1/data/zestaw6/
+hadoop fs -mkdir -p /home/dawiden1/data/zestaw6
+
+hadoop fs -copyFromLocal * ./ && hadoop fs -cp ./* /home/dawiden1/data/zestaw6/
 
 hdfs dfs -ls /home/dawiden1/data/zestaw6/datasource1/

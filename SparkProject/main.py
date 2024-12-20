@@ -8,11 +8,22 @@ spark = SparkSession.builder \
 spark.conf.set("spark.sql.debug.maxToStringFields", 10000)
 
 datasource1 = spark.read.csv(
-    "merged_data.csv",
-    sep=";",        # separator
-    header=False,    # nagłówki
-    inferSchema=True # wykrycie typów kolumn
+    "dataset1.csv",
+    sep=";",  # separator
+    header=False,  # nagłówki
+    inferSchema=True  # wykrycie typów kolumn
 )
+
+datasource4 = spark.read.csv(
+    "dataset4.csv",
+    sep=";",  # separator
+    header=False,  # nagłówki
+    inferSchema=True  # wykrycie typów kolumn
+)
+
+leagues_columns = (datasource4.select(f.col("_c0").alias("league_id"),
+                                      f.col("_c1").alias("league_name"),
+                                      f.col("_c2").alias("league_level")))
 
 selected_columns = (datasource1.select(f.col("_c0").alias("player_id"),
                                        f.col("_c7").alias("player_positions"),
@@ -39,59 +50,106 @@ reduced_data = (selected_columns
                 .join(agg_leagues, on="league_id", how="inner")
                 )
 
+top_clubs = (reduced_data.groupBy("club_name")
+             .agg(f.sum("value_eur").alias("sum_value_eur"),
+                    f.avg("wage_eur").alias("avg_wage_eur"),
+                    f.avg("age").alias("avg_age"),
+                    f.count("player_id").alias("count_players"),
+                    f.collect_list("player_positions").alias("player_positions"))
+                .orderBy(f.desc("avg_wage_eur"))
+                .select(
+    f.lit("club").alias("category"),
+    f.col("club_name").alias("name"),
+    f.format_number(f.col("sum_value_eur"), 0).alias("sum_value_eur"),
+    f.round(f.col("avg_wage_eur") / 1000, 3).alias("avg_wage_eur"),
+    f.round(f.col("avg_age"), 0).cast("int").alias("avg_age"),
+    f.col("count_players").alias("count_players"),
+    f.array_distinct(f.col("player_positions")).alias("player_positions"))
+                .limit(3))
+
+collected_player_positions = reduced_data. \
+    select("club_name", f.explode(f.split(f.col("player_positions"), ",\\s*")).alias("player_position")). \
+    groupBy("club_name"). \
+    agg(f.collect_set("player_position").alias("player_positions")). \
+    select("club_name", "player_positions")
+
+top_clubs = (
+    top_clubs
+    .drop("player_positions")
+    .join(collected_player_positions, top_clubs["name"] == collected_player_positions["club_name"], how="inner")
+    .drop("club_name")
+    .orderBy("avg_wage_eur", ascending=False)
+)
+
+top_leagues = (reduced_data.join(leagues_columns, 'league_id')
+               .groupBy("league_name")
+               .agg(f.sum("value_eur").alias("sum_value_eur"),
+                    f.avg("wage_eur").alias("avg_wage_eur"),
+                    f.avg("age").alias("avg_age"),
+                    f.count("player_id").alias("count_players"),
+                    f.collect_list("player_positions").alias("player_positions"))
+               .orderBy(f.desc("avg_wage_eur"))
+               .select(
+    f.lit("league").alias("category"),
+    f.col("league_name").alias("name"),
+    f.format_number(f.col("sum_value_eur"), 0).alias("sum_value_eur"),
+    f.round(f.col("avg_wage_eur") / 1000, 3).alias("avg_wage_eur"),
+    f.round(f.col("avg_age"), 0).cast("int").alias("avg_age"),
+    f.col("count_players").alias("count_players"),
+    f.array_distinct(f.col("player_positions")).alias("player_positions"))
+               .limit(3))
+
+reduced_data_with_league = reduced_data.join(leagues_columns, on="league_id", how="inner")
+
+collected_league_positions = reduced_data_with_league. \
+    select("league_name", f.explode(f.split(f.col("player_positions"), ",\\s*")).alias("player_position")). \
+    groupBy("league_name"). \
+    agg(f.collect_set("player_position").alias("player_positions")). \
+    select("league_name", "player_positions")
+
+top_leagues = (
+    top_leagues
+    .drop("player_positions")
+    .join(collected_league_positions, top_leagues["name"] == collected_league_positions["league_name"], how="inner")
+    .drop("league_name")
+    .orderBy("avg_wage_eur", ascending=False)
+)
+
 top_nationalities = (reduced_data.groupBy("nationality_name")
-                          .agg(round(f.sum("value_eur"),2).alias("sum_value_eur"),
-                               round(f.avg("wage_eur"),2).alias("avg_wage_eur"),
-                               round(f.avg("age"),2).alias("avg_age"),
-                               round(f.count("player_id"),2).alias("count_players"))
-                          .orderBy(f.desc("avg_wage_eur"))
-                          .withColumn("category",f.lit("nationality"))
-                          .select(
-                                  f.col("category"),
-                                  f.col("nationality_name").alias("name"),
-                                  f.col("sum_value_eur"),
-                                  f.col("avg_wage_eur"),
-                                  f.col("avg_age"),
-                                  f.col("count_players"))
-                          .limit(3))
+               .agg(f.sum("value_eur").alias("sum_value_eur"),
+                    f.avg("wage_eur").alias("avg_wage_eur"),
+                    f.avg("age").alias("avg_age"),
+                    f.count("player_id").alias("count_players"),
+                    f.collect_list("player_positions").alias("player_positions"))
+               .orderBy(f.desc("avg_wage_eur"))
+               .select(
+    f.lit("nationality").alias("category"),
+    f.col("nationality_name").alias("name"),
+    f.format_number(f.col("sum_value_eur"), 0).alias("sum_value_eur"),
+    f.round(f.col("avg_wage_eur") / 1000, 3).alias("avg_wage_eur"),
+    f.round(f.col("avg_age"), 0).cast("int").alias("avg_age"),
+    f.col("count_players").alias("count_players"),
+    f.array_distinct(f.col("player_positions")).alias("player_positions"))
+                .limit(3))
 
-"""top_clubs = (reduced_data.groupBy("club_name")
-                          .agg(f.sum("value_eur").alias("sum_value_eur"),
-                               f.avg("wage_eur").alias("avg_wage_eur"),
-                               f.avg("age").alias("avg_age"),
-                               f.count("player_id").alias("count_players"))
-                          .orderBy(f.desc("avg_wage_eur"))
-                          # .withColumn("category",f.lit("club"))
-                          .select(
-                                  # f.col("category"),
-                                  f.lit("club").alias("category"),
-                                  f.col("nationality_name").alias("name"),
-                                  f.col("sum_value_eur"),
-                                  f.col("avg_wage_eur"),
-                                  f.col("avg_age"),
-                                  f.col("count_players"))
-                          .limit(3))
+collected_nationality_positions = reduced_data. \
+    select("nationality_name", f.explode(f.split(f.col("player_positions"), ",\\s*")).alias("player_position")). \
+    groupBy("nationality_name"). \
+    agg(f.collect_set("player_position").alias("player_positions")). \
+    select("nationality_name", "player_positions")
 
-top_leagues = (reduced_data.groupBy("league_name")
-                          .agg(f.sum("value_eur").alias("sum_value_eur"),
-                               f.avg("wage_eur").alias("avg_wage_eur"),
-                               f.avg("age").alias("avg_age"),
-                               f.count("player_id").alias("count_players"))
-                          .orderBy(f.desc("avg_wage_eur"))
-                          .withColumn("category",f.lit("league"))
-                          .select(
-                                  f.col("category"),
-                                  f.col("nationality_name").alias("name"),
-                                  f.col("sum_value_eur"),
-                                  f.col("avg_wage_eur"),
-                                  f.col("avg_age"),
-                                  f.col("count_players"))
-                          .limit(3))
+top_nationalities = (
+    top_nationalities
+    .drop("player_positions")
+    .join(collected_nationality_positions, top_nationalities["name"] == collected_nationality_positions["nationality_name"], how="inner")
+    .drop("nationality_name")
+    .orderBy("avg_wage_eur", ascending=False)
+)
 
-fifaplayers = top_clubs.union(top_leagues).union(top_nationalities)
-"""
+fifa_players = top_clubs.union(top_leagues).union(top_nationalities)
 
-top_nationalities.printSchema()
+#fifa_players.createOrReplaceTempView("df_result_table")
 
-selected_columns.show()
-top_nationalities.show()
+fifa_players.printSchema()
+fifa_players.show(truncate=False)
+#fifa_players.select("player_positions").show(truncate=False)
